@@ -1,14 +1,20 @@
+
+
 const express =  require('express')
 const router = express.Router()
 const multer = require('multer')
 const path = require('path')
+
+// Production enviroment edits due to mongo db atlas constraints.
+const productionPath = path.join('public', 'prodUploadTemp')
+
 const fs = require('fs')
 const Book = require('../models/book.js')
 const uploadPath = path.join('public', Book.converImageBasePath)
 const Author = require('../models/author.js')
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif']
 const upload = multer({
-    dest: uploadPath,
+    dest:  process.env.NODE_ENV === 'production' ? productionPath : uploadPath,
     fileFilter: (req, file, callback) => {
         callback(null, imageMimeTypes.includes(file.mimetype))
     }
@@ -29,9 +35,6 @@ router.get('/', async (req, res) => {
 
     query.exec()
     .then((books) => {
-
-
-
         res.render('books/index', {books:books, searchOptions: req.query})
     })
 })

@@ -35,6 +35,13 @@ const bookSchema = mongoose.Schema({
 })
 
 bookSchema.virtual('coverImagePath').get(function() {
+    //Production enviroment edits for mongoDB atlas
+    if(process.env.NODE_ENV === 'production'){
+        if(this.coverImageName != null ){
+            return path.join('/', 'prodUploadTemp', this.coverImageName)
+        }
+    }
+    
     if(this.coverImageName != null ){
         return path.join('/', converImageBasePath, this.coverImageName)
     }
