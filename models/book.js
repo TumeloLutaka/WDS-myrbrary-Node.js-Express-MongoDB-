@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-const path = require('path')
-const converImageBasePath = 'uploads/bookCovers'
 
 const bookSchema = mongoose.Schema({
     title: {
@@ -23,8 +21,12 @@ const bookSchema = mongoose.Schema({
         required: true,
         default: Date.now
     },
-    coverImageName: {
-        type: String,
+    coverImage: {
+        type: Buffer,
+        require: true
+    },
+    coverImageType: {
+        type: String, 
         require: true
     },
     author: {
@@ -35,17 +37,9 @@ const bookSchema = mongoose.Schema({
 })
 
 bookSchema.virtual('coverImagePath').get(function() {
-    //Production enviroment edits for mongoDB atlas
-    if(process.env.NODE_ENV === 'production'){
-        if(this.coverImageName != null ){
-            return path.join('/', 'prodUploadTemp', this.coverImageName)
-        }
-    }
-    
-    if(this.coverImageName != null ){
-        return path.join('/', converImageBasePath, this.coverImageName)
+    if(this.coverImage != null && this.coverImageType != null){
+        return `data:${this.coverImageType};charset=utf8;base64,${this.coverImage.toString('base64')}`
     }
 })
 
 module.exports = mongoose.model('Book', bookSchema)
-module.exports.converImageBasePath = converImageBasePath;
