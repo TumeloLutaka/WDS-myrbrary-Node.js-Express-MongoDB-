@@ -45,8 +45,7 @@ router.post('/', (req, res) => {
 
     book.save()
     .then((newBook) => {
-        // res.redirect(`books/${newBook.id}`)
-        res.redirect('books')
+        res.redirect(`books/${newBook.id}`)
     })
     .catch (() => {
         renderNewPage(res, book, true)
@@ -54,14 +53,78 @@ router.post('/', (req, res) => {
 })
 
 function renderNewPage(res, book, hasError = false) {
+    renderFormPage(res, book, 'new', hasError)
+}
+
+// Show book Route
+router.get('/:id', (req, res) => {
+    Book.findById(req.params.id).populate('author').exec()
+    .then((book) => {
+        res.render('books/show', {book: book})
+    })
+})
+
+// Edit Book Route
+router.get('/:id/edit', (req, res) => {
+    Book.findById(req.params.id)
+    .then((book) => renderEditPage(res, book) )
+    .catch(() => res.redirect('/'))
+})
+
+// Update Books Route
+router.put('/:id', (req, res) => {
+     Book.findById(req.params.id)
+    .then((book) => {
+        book.title = req.body.title,
+        book.author = req.body.author,
+        book.publishDate = new Date(req.body.publishDate),
+        book.pageCount = req.body.pageCount,
+        book.description = req.body.description
+
+        if(req.body.cover != null && req.body.cover != ''){
+            saveCover(book, req.body.cover)
+        }
+
+        book.save()
+        .then((newBook) => res.redirect(`/books/${newBook.id}`))
+        .catch(() => renderEditPage(res, book, true)) })
+     .catch (() => {
+        res.redirect('/')
+     })
+ })
+
+ // Delete Book Route
+ router.delete('/:id', (req, res) => {
+    let book
+
+    Book.findById(req.params.id)
+    .then((foundBook) => {
+        book = foundBook
+        book.deleteOne()
+        .then(() => res.redirect('/books'))
+        .catch(() => res.render('/books/show', {book: book, errorMessage: 'Could not remove book'}))
+    })
+    .catch(() => {
+        res.redirect('/')
+    })
+ })
+
+function renderEditPage(res, book, hasError = false) {
+    renderFormPage(res, book, 'edit', hasError)
+}
+
+function renderFormPage(res, book, form, hasError = false) {
     Author.find()
     .then((authors) => {
-        const book = new Book()
-
         const params = {authors:authors, book:book}
-        if(hasError) {params.errorMessage = 'Error creating book'}
+        if(hasError){
+            if (form === 'edit')
+                params.errorMessage = 'Error Updating book'
+            else
+                params.errorMessage = 'Error creating book'
+        }        
 
-        res.render('books/new', params)
+        res.render(`books/${form}`, params)
         
     }) 
     .catch (() => {
