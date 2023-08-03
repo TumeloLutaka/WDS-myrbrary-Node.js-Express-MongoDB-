@@ -5,10 +5,15 @@
 @import url('./variables.css');
 @import url('./header.css');
 @import url('./buttons.css');
+@import url('./form.css');
 
 :root {
-    font-family: 'Poppins', sans-serif;
-    /* font-family: 'Montserrat', sans-serif; */
+
+    --font-family-main: 'Poppins', sans-serif;
+    /* --font-family-main: 'Montserrat', sans-serif; */
+
+    font-family: var(--font-family-main);
+    
     font-size: 20px;
     color: var(--color-text-light);
 }
